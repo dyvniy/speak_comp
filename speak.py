@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QTextEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 from playpart import PlayPart
+import soundfile as sf
+import os.path
  
 class App(QWidget):
     lastAlpha = ' '
@@ -13,13 +15,19 @@ class App(QWidget):
         self.left = 100
         self.top = 100
         self.width = 320
-        self.height = 400
+        self.height = 550
         self.initVoice()
         self.initUI()
 
     def initVoice(self):
-        self.pp = PlayPart('Words1_nick_vovk (2).wav')
-        fpairs = open('Words1_nick_vovk (2).txt', encoding="utf8")
+        voice_name = 'Words1_nick_vovk'
+
+        if not os.path.isfile(voice_name + '.wav'): 
+            data, samplerate = sf.read(voice_name + '.ogg')
+            sf.write(voice_name + '.wav', data, samplerate)
+
+        self.pp = PlayPart(voice_name + '.wav')
+        fpairs = open(voice_name + '.txt', encoding="utf8")
         lines = fpairs.readlines()
         fpairs.close()
         pair_name = ''
@@ -58,8 +66,17 @@ class App(QWidget):
             ai = chr(oi)
 
         self.te = QTextEdit(self)
-        self.te.move(0,120)
+        self.te.move(0,100)
         self.te.resize(320, 200)
+
+        self.te2 = QTextEdit(self)
+        self.te2.move(0,320)
+        self.te2.resize(320, 200)
+        self.te2.append('не и ')
+        button = QPushButton("read", self)
+        button.move(20, 530)
+        button.resize(40, 20)
+        button.clicked.connect(self.on_click2)
 
         self.show()
  
@@ -75,6 +92,18 @@ class App(QWidget):
         self.te.append(s)
         
         self.lastAlpha = self.sender().char
+
+    @pyqtSlot()
+    def on_click2(self):
+        try:
+            text = self.te2.toPlainText()
+            lastA = ' '
+            for a in text:
+                pair = lastA + a
+                self.say(pair)
+                lastA = a
+        except Exception as e:
+            print(e)
 
     def say(self, pair):
         times = self.pairs.get(pair, [0, 1])
