@@ -1,4 +1,5 @@
 import operator
+import json
 
 f = open('words2.txt', encoding='utf8')
 lines = f.readlines()
@@ -83,8 +84,10 @@ for word_pair in sorted_words:
                     pairs_in.append(paird)
                     ps[paird] = 0
                 lastd = chd
-            ps[lastd+' '] = 0
-            pairs_in.append(lastd+' ')
+            paird = lastd+' '
+            if ps.get(paird, 0) > 0:
+                ps[paird] = 0
+                pairs_in.append(paird)
         else:
             yesno[1] += 1
 
@@ -103,10 +106,30 @@ for word in words1_:
 fout.close()
 
 fout = open('words2_dict.txt', 'w', encoding="utf8")
-pair_list = []
 for word in words1_:
-    fout.write('{"' + str(word) + '",')
+    fout.write('#' + str(word) + '\n')
     for pair in word[1]:
-        fout.write('{"' + str(pair) + '", [0.00, 1.00] },\n')
+        fout.write('"' + str(pair) + '\n0.00 1.00\n')
 fout.close()
 
+#read
+fpairs = open('words2_dict.txt', encoding="utf8")
+lines = fpairs.readlines()
+pair_name = ''
+pair_dict = {}
+comnamval = [0, 0, 0]
+for line in lines:
+    if line[0] == '#':
+        comnamval[0] += 1
+        continue # it's comment
+    elif line[0] == '"':
+        comnamval[1] += 1
+        pair_name = line[1:3]
+    else:
+        comnamval[2] += 1
+        pair_dict[pair_name] = line.split()
+    #lpairs.append(json
+print(len(lines))
+print(len(pair_dict))
+print(comnamval)
+print(pair_dict)
